@@ -3,34 +3,42 @@ import { Link, useNavigate } from "react-router";
 import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
-import axios from "axios";
+// import axios from "axios";
+import api from "../lib/axios";
 
 const CreatePage = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    if(!title.trim() || !content.trim()) {
-      toast.error("All fields are required")
-      return;
-    }
+    e.preventDefault();
+    // if (!title.trim() || !content.trim()) {
+    //   toast.error("All fields are required");
+    //   return;
+    // }
 
-    setLoading(true)
+    setLoading(true);
     try {
-      await axios.post("http://localhost:5001/api/notes", {
+      await api.post("/notes", {
         title,
         content,
-      })
-      toast.success("Note created successfully!")
-      navigate("/")
+      });
+      toast.success("Note created successfully!");
+      navigate("/");
     } catch (error) {
-      console.log("Error creating note", error)
-      toast.error("Failed to create note")
+      console.log("Error creating note", error);
+      if (error.response.status === 429) {
+        toast.error("Slow down! You're creating notes too fast", {
+          duration: 4000,
+          icon: "💀",
+        });
+      } else {
+        toast.error("Failed to create note");
+      }
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   };
 
@@ -74,8 +82,12 @@ const CreatePage = () => {
                 </div>
 
                 <div className="card-actions justify-end">
-                  <button type="submit" className="btn btn-primary" disabled={loading}>
-                    {loading? "Creating..." : "Create Note"}
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={loading}
+                  >
+                    {loading ? "Creating..." : "Create Note"}
                   </button>
                 </div>
               </form>
